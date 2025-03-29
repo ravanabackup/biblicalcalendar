@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orthodox Biblical Calendar</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .month {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .month-header {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            background-color: #f2f2f2;
+            padding: 5px 0;
+        }
+        
+        .dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        
+        .date-cell {
+            min-height: 80px;
+            border: 1px solid #eee;
+            padding: 5px;
+            position: relative;
+        }
+        
+        .date-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
+        .event {
+            font-size: 0.85em;
+            margin-top: 15px;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            color: #2c3e50;
+        }
+        
+        .event-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #e74c3c;
+        }
+        
+        .empty {
+            background-color: #f9f9f9;
+        }
+        
+        .today {
+            background-color: #fffde7;
+            border: 2px solid #ffeb3b !important;
+        }
+        
+        .feast {
+            background-color: #e8f5e9;
+        }
+        
+        .lent {
+            background-color: #ede7f6;
+        }
+        
+        .holy-day {
+            background-color: #ffebee;
+        }
+        
+        .description {
+            font-size: 0.8em;
+            color: #555;
+            margin-top: 3px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #3498db;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #e74c3c;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .year-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .year-selector select {
+            padding: 8px 15px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .year-selector button {
+            padding: 8px 15px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .year-selector button:hover {
+            background-color: #2980b9;
+        }
+        
+        .event-content {
+            margin-top: 18px;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Orthodox Biblical Calendar <span id="calendar-year"></span></h1>
+    
+    <div class="year-selector">
+        <select id="year-select">
+            <!-- Will be populated dynamically -->
+        </select>
+        <button id="load-calendar">Load Calendar</button>
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #e8f5e9;"></div>
+            <span>Feast Days</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ede7f6;"></div>
+            <span>Lent Periods</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ffebee;"></div>
+            <span>Holy Days</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #fffde7;"></div>
+            <span>Today</span>
+        </div>
+    </div>
+    
+    <div id="calendar-container" class="calendar-container">
+        <div class="loading">Loading calendar data...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate year selector
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            const calendarYearSpan = document.getElementById('calendar-year');
+            
+            // Populate the year dropdown with options from current year to +5 years
+            for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+            
+            // Set the current year as the default
+            yearSelect.value = currentYear;
+            calendarYearSpan.textContent = currentYear;
+            
+            // Load the calendar for the current year initially
+            loadCalendarData(currentYear);
+            
+            // Add event listener to the load button
+            document.getElementById('load-calendar').addEventListener('click', function() {
+                const selectedYear = parseInt(yearSelect.value);
+                calendarYearSpan.textContent = selectedYear;
+                loadCalendarData(selectedYear);
+            });
+            
+            // Function to load calendar data
+            function loadCalendarData(year) {
+                const container = document.getElementById('calendar-container');
+                container.innerHTML = '<div class="loading">Loading calendar data...</div>';
+                
+                // Generate calendar data
+                const calendarData = generateCalendarData(year);
+                renderCalendar(calendarData, year);
+            }
+            
+            // Function to generate comprehensive Orthodox calendar data
+            function generateCalendarData(year) {
+                const calendarData = {};
+                
+                // Calculate Easter date (Orthodox Pascha)
+                const easterDate = calculateOrthodoxEaster(year);
+                const easterMonth = easterDate.getMonth() + 1;
+                const easterDay = easterDate.getDate();
+                
+                // Add Easter (Pascha)
+                calendarData[`${easterMonth}/${easterDay}`] = [
+                    "PASCHA (Easter Sunday)",
+                    "",
+                    "ESTR",
+                    "The Resurrection of our Lord and Savior Jesus Christ, the Feast of Feasts"
+                ];
+                
+                // Bright Week (week after Pascha)
+                for (let i = 1; i <= 6; i++) {
+                    const brightDay = new Date(easterDate);
+                    brightDay.setDate(easterDate.getDate() + i);
+                    const brightMonth = brightDay.getMonth() + 1;
+                    const brightDayNum = brightDay.getDate();
+                    
+                    const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                    
+                    calendarData[`${brightMonth}/${brightDayNum}`] = [
+                        `Bright ${dayNames[i-1]}`,
+                        "",
+                        "",
+                        `${dayNames[i-1]} of Bright Week, the week of rejoicing following Pascha`
+                    ];
+                }
+                
+                // Thomas Sunday (Sunday after Pascha)
+                const thomasSunday = new Date(easterDate);
+                thomasSunday.setDate(easterDate.getDate() + 7);
+                const thomasMonth = thomasSunday.getMonth() + 1;
+                const thomasDay = thomasSunday.getDate();
+                
+                calendarData[`${thomasMonth}/${thomasDay}`] = [
+                    "Thomas Sunday (Antipascha)",
+                    "",
+                    "",
+                    "Commemoration of the appearance of Christ to the Apostle Thomas"
+                ];
+                
+                // Sundays after Pascha
+                const sundayNames = [
+                    "Sunday of the Myrrh-bearing Women",
+                    "Sunday of the Paralytic",
+                    "Sunday of the Samaritan Woman",
+                    "Sunday of the Blind Man"
+                ];
+                
+                for (let i = 0; i < sundayNames.length; i++) {
+                    const sunday = new Date(easterDate);
+                    sunday.setDate(easterDate.getDate() + 14 + (i * 7));
+                    const sundayMonth = sunday.getMonth() + 1;
+                    const sundayDay = sunday.getDate();
+                    
+                    calendarData[`${sundayMonth}/${sundayDay}`] = [
+                        sundayNames[i],
+                        "",
+                        "",
+                        `${i+2}nd Sunday after Pascha`
+                    ];
+                }
+                
+                // Mid-Pentecost (25 days after Pascha)
+                const midPentecost = new Date(easterDate);
+                midPentecost.setDate(easterDate.getDate() + 24);
+                const midPentecostMonth = midPentecost.getMonth() + 1;
+                const midPentecostDay = midPentecost.getDate();
+                
+                calendarData[`${midPentecostMonth}/${midPentecostDay}`] = [
+                    "Mid-Pentecost",
+                    "",
+                    "",
+                    "Feast celebrating the midpoint between Pascha and Pentecost"
+                ];
+                
+                // Ascension (40 days after Easter)
+                const ascension = new Date(easterDate);
+                ascension.setDate(easterDate.getDate() + 39);
+                const ascensionMonth = ascension.getMonth() + 1;
+                const ascensionDay = ascension.getDate();
+                
+                calendarData[`${ascensionMonth}/${ascensionDay}`] = [
+                    "Ascension of Our Lord",
+                    "",
+                    "SHNO",
+                    "Commemorates Christ's bodily ascension into heaven"
+                ];
+                
+                // Sunday after Ascension
+                const sundayAfterAscension = new Date(ascension);
+                while (sundayAfterAscension.getDay() !== 0) {
+                    sundayAfterAscension.setDate(sundayAfterAscension.getDate() + 1);
+                }
+                const saMonth = sundayAfterAscension.getMonth() + 1;
+                const saDay = sundayAfterAscension.getDate();
+                
+                calendarData[`${saMonth}/${saDay}`] = [
+                    "Sunday of the Holy Fathers",
+                    "",
+                    "",
+                    "Commemoration of the Fathers of the First Ecumenical Council"
+                ];
+                
+                // Pentecost (50 days after Easter)
+                const pentecost = new Date(easterDate);
+                pentecost.setDate(easterDate.getDate() + 49);
+                const pentecostMonth = pentecost.getMonth() + 1;
+                const pentecostDay = pentecost.getDate();
+                
+                calendarData[`${pentecostMonth}/${pentecostDay}`] = [
+                    "Holy Pentecost",
+                    "",
+                    "PNTC",
+                    "Descent of the Holy Spirit upon the Apostles, Birthday of the Church"
+                ];
+                
+                // Monday of the Holy Spirit
+                const spiritMonday = new Date(pentecost);
+                spiritMonday.setDate(pentecost.getDate() + 1);
+                const smMonth = spiritMonday.getMonth() + 1;
+                const smDay = spiritMonday.getDate();
+                
+                calendarData[`${smMonth}/${smDay}`] = [
+                    "Monday of the Holy Spirit",
+                    "",
+                    "",
+                    "Day following Pentecost dedicated to the Holy Spirit"
+                ];
+                
+                // All Saints Sunday (Sunday after Pentecost)
+                const allSaints = new Date(pentecost);
+                allSaints.setDate(pentecost.getDate() + 7);
+                const asMonth = allSaints.getMonth() + 1;
+                const asDay = allSaints.getDate();
+                
+                calendarData[`${asMonth}/${asDay}`] = [
+                    "Sunday of All Saints",
+                    "",
+                    "",
+                    "Commemoration of all the saints who have shown forth throughout the world"
+                ];
+                
+                // Apostles' Fast begins (Monday after All Saints)
+                const apostlesFastBegin = new Date(allSaints);
+                apostlesFastBegin.setDate(allSaints.getDate() + 1);
+                const afbMonth = apostlesFastBegin.getMonth() + 1;
+                const afbDay = apostlesFastBegin.getDate();
+                
+                calendarData[`${afbMonth}/${afbDay}`] = [
+                    "Beginning of Apostles' Fast",
+                    "",
+                    "LENT",
+                    "Fast honoring the Holy Apostles Peter and Paul"
+                ];
+                
+                // Saints Peter and Paul (June 29, end of Apostles' Fast)
+                calendarData["6/29"] = [
+                    "Holy Apostles Peter and Paul",
+                    "",
+                    "SHNO",
+                    "Feast of the foremost of the Apostles and end of the Apostles' Fast"
+                ];
+                
+                // Great Lent dates
+                
+                // Clean Monday (beginning of Great Lent - 48 days before Pascha)
+                const cleanMonday = new Date(easterDate);
+                cleanMonday.setDate(easterDate.getDate() - 48);
+                const cmMonth = cleanMonday.getMonth() + 1;
+                const cmDay = cleanMonday.getDate();
+                
+                calendarData[`${cmMonth}/${cmDay}`] = [
+                    "Clean Monday (Beginning of Great Lent)",
+                    "",
+                    "LENT",
+                    "First day of Great Lent, a day of strict fasting"
+                ];
+                
+                // Sunday of Orthodoxy (First Sunday of Great Lent)
+                const orthodoxySunday = new Date(cleanMonday);
+                while (orthodoxySunday.getDay() !== 0) {
+                    orthodoxySunday.setDate(orthodoxySunday.getDate() + 1);
+                }
+                const osMonth = orthodoxySunday.getMonth() + 1;
+                const osDay = orthodoxySunday.getDate();
+                
+                calendarData[`${osMonth}/${osDay}`] = [
+                    "Sunday of Orthodoxy",
+                    "",
+                    "LENT",
+                    "First Sunday of Great Lent, celebrating the victory over iconoclasm"
+                ];
+                
+                // Sunday of St. Gregory Palamas (Second Sunday)
+                const palamasSunday = new Date(orthodoxySunday);
+                palamasSunday.setDate(orthodoxySunday.getDate() + 7);
+                const psMonth = palamasSunday.getMonth() + 1;
+                const psDay = palamasSunday.getDate();
+                
+                calendarData[`${psMonth}/${psDay}`] = [
+                    "Sunday of St. Gregory Palamas",
+                    "",
+                    "LENT",
+                    "Second Sunday of Great Lent"
+                ];
+                
+                // Sunday of the Cross (Third Sunday)
+                const crossSunday = new Date(palamasSunday);
+                crossSunday.setDate(palamasSunday.getDate() + 7);
+                const crsMonth = crossSunday.getMonth() + 1;
+                const crsDay = crossSunday.getDate();
+                
+                calendarData[`${crsMonth}/${crsDay}`] = [
+                    "Sunday of the Holy Cross",
+                    "",
+                    "LENT",
+                    "Third Sunday of Great Lent, veneration of the Cross"
+                ];
+                
+                // Sunday of St. John Climacus (Fourth Sunday)
+                const climacusSunday = new Date(crossSunday);
+                climacusSunday.setDate(crossSunday.getDate() + 7);
+                const clsMonth = climacusSunday.getMonth() + 1;
+                const clsDay = climacusSunday.getDate();
+                
+                calendarData[`${clsMonth}/${clsDay}`] = [
+                    "Sunday of St. John Climacus",
+                    "",
+                    "LENT",
+                    "Fourth Sunday of Great Lent"
+                ];
+                
+                // Sunday of St. Mary of Egypt (Fifth Sunday)
+                const marySunday = new Date(climacusSunday);
+                marySunday.setDate(climacusSunday.getDate() + 7);
+                const msMonth = marySunday.getMonth() + 1;
+                const msDay = marySunday.getDate();
+                
+                calendarData[`${msMonth}/${msDay}`] = [
+                    "Sunday of St. Mary of Egypt",
+                    "",
+                    "LENT",
+                    "Fifth Sunday of Great Lent"
+                ];
+                
+                // Lazarus Saturday
+                const lazarusSaturday = new Date(easterDate);
+                lazarusSaturday.setDate(easterDate.getDate() - 8);
+                const lsMonth = lazarusSaturday.getMonth() + 1;
+                const lsDay = lazarusSaturday.getDate();
+                
+                calendarData[`${lsMonth}/${lsDay}`] = [
+                    "Lazarus Saturday",
+                    "",
+                    "LENT",
+                    "Commemorates the raising of Lazarus from the dead"
+                ];
+                
+                // Palm Sunday
+                const palmSunday = new Date(easterDate);
+                palmSunday.setDate(easterDate.getDate() - 7);
+                const palmMonth = palmSunday.getMonth() + 1;
+                const palmDay = palmSunday.getDate();
+                
+                calendarData[`${palmMonth}/${palmDay}`] = [
+                    "Palm Sunday (Entry of the Lord into Jerusalem)",
+                    "",
+                    "SHNO",
+                    "Commemorates Jesus's triumphal entry into Jerusalem"
+                ];
+                
+                // Holy Week days
+                const holyWeekDays = [
+                    "Great and Holy Monday",
+                    "Great and Holy Tuesday",
+                    "Great and Holy Wednesday",
+                    "Great and Holy Thursday",
+                    "Great and Holy Friday",
+                    "Great and Holy Saturday"
+                ];
+                
+                for (let i = 0; i < holyWeekDays.length; i++) {
+                    const holyDay = new Date(easterDate);
+                    holyDay.setDate(easterDate.getDate() - (6 - i));
+                    const hdMonth = holyDay.getMonth() + 1;
+                    const hdDay = holyDay.getDate();
+                    
+                    calendarData[`${hdMonth}/${hdDay}`] = [
+                        holyWeekDays[i],
+                        "",
+                        "HOLY",
+                        `Day of Holy Week preceding Pascha`
+                    ];
+                }
+                
+                // Fixed Date Feasts and Commemorations
+                
+                // Nativity of Christ (Christmas)
+                calendarData["12/25"] = [
+                    "Nativity of Our Lord and Savior Jesus Christ",
+                    "",
+                    "XMAS",
+                    "The birth of Jesus Christ"
+                ];
+                
+                // Nativity Fast (November 15 to December 24)
+                calendarData["11/15"] = [
+                    "Beginning of Nativity Fast",
+                    "",
+                    "LENT",
+                    "40-day preparation for the Feast of the Nativity"
+                ];
+                
+                // Theophany
+                calendarData["1/6"] = [
+                    "Theophany (Epiphany)",
+                    "",
+                    "SHNO",
+                    "The baptism of Christ in the Jordan River"
+                ];
+                
+                // Eve of Theophany
+                calendarData["1/5"] = [
+                    "Eve of Theophany",
+                    "",
+                    "",
+                    "Strict fast day before Theophany"
+                ];
+                
+                // Meeting of the Lord (Presentation)
+                calendarData["2/2"] = [
+                    "Meeting of our Lord in the Temple",
+                    "",
+                    "SHNO",
+                    "Commemorates the presentation of Christ in the Temple"
+                ];
+                
+                // Annunciation
+                calendarData["3/25"] = [
+                    "Annunciation of the Theotokos",
+                    "",
+                    "SHNO",
+                    "Announcing to Mary that she would conceive Jesus"
+                ];
+                
+                // Nativity of the Theotokos
+                calendarData["9/8"] = [
+                    "Nativity of the Theotokos",
+                    "",
+                    "SHNO",
+                    "Birth of the Virgin Mary"
+                ];
+                
+                // Exaltation of the Holy Cross
+                calendarData["9/14"] = [
+                    "Exaltation of the Holy Cross",
+                    "",
+                    "CRSS",
+                    "Finding of the True Cross by St. Helena"
+                ];
+                
+                // Entry of the Theotokos
+                calendarData["11/21"] = [
+                    "Entry of the Theotokos into the Temple",
+                    "",
+                    "SHNO",
+                    "Commemoration of the Virgin Mary's entry into the Temple"
+                ];
+                
+                // Dormition of the Theotokos
+                calendarData["8/15"] = [
+                    "Dormition of the Theotokos",
+                    "",
+                    "DNHA",
+                    "Commemoration of the 'falling asleep' of the Mother of God"
+                ];
+                
+                // Dormition Fast (August 1-14)
+                calendarData["8/1"] = [
+                    "Beginning of Dormition Fast",
+                    "",
+                    "LENT",
+                    "Two-week fast preceding the Feast of Dormition"
+                ];
+                
+                // Transfiguration
+                calendarData["8/6"] = [
+                    "Transfiguration of Our Lord",
+                    "",
+                    "TRNS",
+                    "Christ's transfiguration on Mount Tabor"
+                ];
+                
+                // Beheading of John the Baptist
+                calendarData["8/29"] = [
+                    "Beheading of St. John the Baptist",
+                    "",
+                    "SHNO",
+                    "Strict fast day commemorating the martyrdom of St. John"
+                ];
+                
+                // Protection of the Theotokos
+                calendarData["10/1"] = [
+                    "Protection of the Theotokos",
+                    "",
+                    "",
+                    "Commemoration of the appearance of the Mother of God at Blachernae"
+                ];
+                
+                // St. Nicholas Day
+                calendarData["12/6"] = [
+                    "St. Nicholas the Wonderworker",
+                    "",
+                    "",
+                    "Feast of St. Nicholas of Myra"
+                ];
+                
+                // Circumcision of Christ
+                calendarData["1/1"] = [
+                    "Circumcision of Christ & St. Basil the Great",
+                    "",
+                    "",
+                    "Commemorates the Circumcision of Christ and St. Basil"
+                ];
+                
+                // Synaxis of the Holy Apostles
+                calendarData["6/30"] = [
+                    "Synaxis of the Twelve Apostles",
+                    "",
+                    "",
+                    "Gathering in honor of the Twelve Apostles"
+                ];
+                
+                // Holy Apostle John the Theologian
+                calendarData["5/8"] = [
+                    "Holy Apostle and Evangelist John the Theologian",
+                    "",
+                    "",
+                    "Commemorates St. John the Evangelist"
+                ];
+                
+                calendarData["9/26"] = [
+                    "Repose of St. John the Theologian",
+                    "",
+                    "",
+                    "Commemorates the death of St. John the Evangelist"
+                ];
+                
+                // Holy Apostle and Evangelist Matthew
+                calendarData["11/16"] = [
+                    "Holy Apostle and Evangelist Matthew",
+                    "",
+                    "",
+                    "Feast of St. Matthew"
+                ];
+                
+                // Holy Apostle and Evangelist Mark
+                calendarData["4/25"] = [
+                    "Holy Apostle and Evangelist Mark",
+                    "",
+                    "",
+                    "Feast of St. Mark"
+                ];
+                
+                // Holy Apostle and Evangelist Luke
+                calendarData["10/18"] = [
+                    "Holy Apostle and Evangelist Luke",
+                    "",
+                    "",
+                    "Feast of St. Luke"
+                ];
+                
+                // St. George the Trophy-bearer
+                calendarData["4/23"] = [
+                    "Great Martyr George the Trophy-bearer",
+                    "",
+                    "MRTR",
+                    "Commemoration of St. George"
+                ];
+                
+                // Holy Prophet Elijah
+                calendarData["7/20"] = [
+                    "Holy Prophet Elijah",
+                    "",
+                    "",
+                    "Commemoration of the Prophet Elijah"
+                ];
+                
+                // Saints Constantine and Helen
+                calendarData["5/21"] = [
+                    "Sts. Constantine and Helen, Equal to the Apostles",
+                    "",
+                    "",
+                    "Commemorates Emperor Constantine and his mother Helen"
+                ];
+                
+                // Three Hierarchs
+                calendarData["1/30"] = [
+                    "Three Holy Hierarchs",
+                    "",
+                    "",
+                    "Basil the Great, Gregory the Theologian, and John Chrysostom"
+                ];
+                
+                // St. John Chrysostom
+                calendarData["11/13"] = [
+                    "St. John Chrysostom, Archbishop of Constantinople",
+                    "",
+                    "",
+                    "Feast of St. John Chrysostom"
+                ];
+                
+                // St. Basil the Great
+                calendarData["1/1"] = [
+                    "St. Basil the Great, Archbishop of Caesarea",
+                    "",
+                    "",
+                    "Feast of St. Basil the Great"
+                ];
+                
+                // St. Gregory the Theologian
+                calendarData["1/25"] = [
+                    "St. Gregory the Theologian, Archbishop of Constantinople",
+                    "",
+                    "",
+                    "Feast of St. Gregory the Theologian"
+                ];
+                
+                // Sts. Athanasius and Cyril
+                calendarData["1/18"] = [
+                    "Sts. Athanasius and Cyril, Patriarchs of Alexandria",
+                    "",
+                    "",
+                    "Commemoration of Sts. Athanasius and Cyril"
+                ];
+                
+                // Sts. Cyril and Methodius
+                calendarData["5/11"] = [
+                    "Sts. Cyril and Methodius, Equal to the Apostles",
+                    "",
+                    "",
+                    "Commemorates the enlighteners of the Slavs"
+                ];
+                
+                // Add more saints and feast days here...
+                
+                return calendarData;
+            }
+            
+            // Helper function to calculate Orthodox Easter date
+            function calculateOrthodoxEaster(year) {
+                // Julian calendar algorithm for Pascha (Orthodox Easter)
+                const a = year % 19;
+                const b = year % 4;
+                const c = year % 7;
+                const d = (19 * a + 15) % 30;
+                const e = (2 * b + 4 * c + 6 * d + 6) % 7;
+                const f = d + e;
+
+                // Orthodox Easter can be in April or May in Gregorian calendar
+                // 13 days is the current difference between Julian and Gregorian calendars
+                let day = f + 1 + 13;
+                let month = 3; // April (0-indexed)
+                
+                if (day > 30) {
+                    day -= 30;
+                    month = 4; // May (0-indexed)
+                }
+                
+                return new Date(year, month, day);
+            }
+            
+            // Function to render the calendar
+            function renderCalendar(data, year) {
+                const container = document.getElementById('calendar-container');
+                container.innerHTML = '';
+                
+                const today = new Date();
+                const currentMonth = today.getMonth();
+                const currentDate = today.getDate();
+                const currentYear = today.getFullYear();
+                
+                const monthNames = ["January", "February", "March", "April", "May", "June", 
+                                   "July", "August", "September", "October", "November", "December"];
+                
+                const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                
+                // Loop through each month to create calendar
+                for (let month = 0; month < 12; month++) {
+                    // Create month container
+                    const monthDiv = document.createElement('div');
+                    monthDiv.className = 'month';
+                    
+                    // Create month header
+                    const monthHeader = document.createElement('div');
+                    monthHeader.className = 'month-header';
+                    monthHeader.textContent = monthNames[month] + ' ' + year;
+                    monthDiv.appendChild(monthHeader);
+                    
+                    // Create days of week header
+                    const daysHeader = document.createElement('div');
+                    daysHeader.className = 'days';
+                    
+                    for (let i = 0; i < 7; i++) {
+                        const daySpan = document.createElement('span');
+                        daySpan.textContent = dayNames[i];
+                        daysHeader.appendChild(daySpan);
+                    }
+                    
+                    monthDiv.appendChild(daysHeader);
+                    
+                    // Create dates grid
+                    const datesGrid = document.createElement('div');
+                    datesGrid.className = 'dates';
+                    
+                    // Get first day of month and total days in month
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const totalDays = new Date(year, month + 1, 0).getDate();
+                    
+                    // Add empty cells for days before first of month
+                    for (let i = 0; i < firstDay; i++) {
+                        const emptyCell = document.createElement('div');
+                        emptyCell.className = 'date-cell empty';
+                        datesGrid.appendChild(emptyCell);
+                    }
+                    
+                    // Add cells for each day of the month
+                    for (let day = 1; day <= totalDays; day++) {
+                        const dateCell = document.createElement('div');
+                        dateCell.className = 'date-cell';
+                        
+                        // Create date number element
+                        const dateNumber = document.createElement('div');
+                        dateNumber.className = 'date-number';
+                        dateNumber.textContent = day;
+                        dateCell.appendChild(dateNumber);
+                        
+                        // Check if this is today
+                        if (year === currentYear && month === currentMonth && day === currentDate) {
+                            dateCell.classList.add('today');
+                        }
+                        
+                        // Check if this date has an event
+                        const dateKey = `${month + 1}/${day}`;
+                        if (data[dateKey]) {
+                            const eventInfo = data[dateKey];
+                            
+                            // Apply appropriate styling based on event type
+                            if (eventInfo[2] === 'LENT') {
+                                dateCell.classList.add('lent');
+                            } else if (['SHNO', 'ESTR', 'XMAS', 'PNTC', 'CRSS', 'TRNS', 'DNHA'].includes(eventInfo[2])) {
+                                dateCell.classList.add('feast');
+                            } else if (eventInfo[2] === 'HOLY') {
+                                dateCell.classList.add('holy-day');
+                            }
+                            
+                            // Add event content
+                            const eventContent = document.createElement('div');
+                            eventContent.className = 'event-content';
+                            
+                            // Add event title
+                            const eventTitle = document.createElement('div');
+                            eventTitle.className = 'event-title';
+                            eventTitle.textContent = eventInfo[0];
+                            eventContent.appendChild(eventTitle);
+                            
+                            // Add event description if available
+                            if (eventInfo[3]) {
+                                const eventDesc = document.createElement('div');
+                                eventDesc.className = 'description';
+                                eventDesc.textContent = eventInfo[3];
+                                eventContent.appendChild(eventDesc);
+                            }
+                            
+                            dateCell.appendChild(eventContent);
+                        }
+                        
+                        datesGrid.appendChild(dateCell);
+                    }
+                    
+                    // Add empty cells to complete the grid
+                    const lastDay = new Date(year, month, totalDays).getDay();
+                    if (lastDay < 6) {
+                        for (let i = lastDay + 1; i <= 6; i++) {
+                            const emptyCell = document.createElement('div');
+                            emptyCell.className = 'date-cell empty';
+                            datesGrid.appendChild(emptyCell);
+                        }
+                    }
+                    
+                    monthDiv.appendChild(datesGrid);
+                    container.appendChild(monthDiv);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
