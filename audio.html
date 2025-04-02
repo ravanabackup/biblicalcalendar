@@ -432,21 +432,21 @@
             setupEventListeners();
         }
 
-        // Populate the book dropdown
-        function populateBookSelect() {
-            bookSelect.innerHTML = '';
-            const books = bibleData[currentTestament];
-            
-            books.forEach(book => {
-                const option = document.createElement('option');
-                option.value = book.name;
-                option.textContent = book.name;
-                bookSelect.appendChild(option);
-            });
-            
-            currentBook = books[0].name;
-            updateChapterInput();
-        }
+       // Populate the book dropdown
+function populateBookSelect() {
+    bookSelect.innerHTML = '';
+    const books = bibleData[currentTestament];
+    
+    books.forEach(book => {
+        const option = document.createElement('option');
+        option.value = book.name;
+        option.textContent = book.name;
+        bookSelect.appendChild(option);
+    });
+    
+    // Don't reset the current book here, just update the chapter input
+    updateChapterInput();
+}
 
         // Update chapter buttons based on selected book
         function updateChapterButtons() {
@@ -509,46 +509,46 @@
             return bibleData[currentTestament].find(book => book.name === currentBook);
         }
 
-        // Select a random passage
-        function selectRandomPassage() {
-            // Randomly choose testament
-            const randomTestament = Math.random() < 0.5 ? 'old' : 'new';
-            currentTestament = randomTestament;
-            
-            // Update testament buttons
-            testamentBtns.forEach(btn => {
-                if (btn.dataset.testament === currentTestament) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-            
-            // Randomly choose book
-            const books = bibleData[currentTestament];
-            const randomBookIndex = Math.floor(Math.random() * books.length);
-            const randomBook = books[randomBookIndex];
-            currentBook = randomBook.name;
-            
-            // Update book select
-            populateBookSelect();
-            bookSelect.value = currentBook;
-            
-            // Randomly choose chapter
-            currentChapter = Math.floor(Math.random() * randomBook.chapters) + 1;
-            chapterInput.value = currentChapter;
-            
-            // Update UI
-            updateChapterButtons();
-            
-            // Show a message
-            verseText.innerHTML = `<p>Randomly selected: <strong>${currentBook} ${currentChapter}</strong></p>`;
-            verseText.style.display = 'block';
-            
-            // Load the audio
-            loadAudio();
+       // Select a random passage
+function selectRandomPassage() {
+    // Randomly choose testament
+    const randomTestament = Math.random() < 0.5 ? 'old' : 'new';
+    currentTestament = randomTestament;
+    
+    // Update testament buttons
+    testamentBtns.forEach(btn => {
+        if (btn.dataset.testament === currentTestament) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
         }
-
+    });
+    
+    // Randomly choose book
+    const books = bibleData[currentTestament];
+    const randomBookIndex = Math.floor(Math.random() * books.length);
+    const randomBook = books[randomBookIndex];
+    currentBook = randomBook.name;
+    
+    // Update book select - rebuild the dropdown first
+    populateBookSelect();
+    // Then explicitly set the selected value to our random book
+    bookSelect.value = currentBook;
+    
+    // Randomly choose chapter
+    currentChapter = Math.floor(Math.random() * randomBook.chapters) + 1;
+    chapterInput.value = currentChapter;
+    
+    // Update UI
+    updateChapterButtons();
+    
+    // Show a message
+    verseText.innerHTML = `<p>Randomly selected: <strong>${currentBook} ${currentChapter}</strong></p>`;
+    verseText.style.display = 'block';
+    
+    // Load the audio
+    loadAudio();
+}
         // Format book name for URL - FIXED FUNCTION
         function formatBookNameForUrl(bookName) {
             // Replace spaces and handle special characters for the audio URL
