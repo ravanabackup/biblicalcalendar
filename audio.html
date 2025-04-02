@@ -169,22 +169,41 @@
             color: white;
         }
 
-        .listen-btn {
-            display: block;
-            width: 100%;
+        /* Button group styles for Listen and Random buttons */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .listen-btn, .random-btn {
             padding: 15px;
-            background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 5px;
             font-size: 1.1rem;
             cursor: pointer;
-            margin-top: 20px;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .listen-btn {
+            background-color: var(--primary);
+        }
+
+        .random-btn {
+            background-color: var(--secondary);
         }
 
         .listen-btn:hover {
             background-color: var(--secondary);
+        }
+
+        .random-btn:hover {
+            background-color: var(--primary);
         }
 
         .audio-container {
@@ -240,7 +259,7 @@
         }
 
         @media (max-width: 768px) {
-            .controls {
+            .controls, .button-group {
                 grid-template-columns: 1fr;
             }
         }
@@ -288,9 +307,14 @@
                 </div>
             </div>
 
-            <button id="listenBtn" class="listen-btn">
-                <span>🔊 Listen to Scripture</span>
-            </button>
+            <div class="button-group">
+                <button id="listenBtn" class="listen-btn">
+                    <span>🔊 Listen to Scripture</span>
+                </button>
+                <button id="randomBtn" class="random-btn">
+                    <span>🎲 Random Passage</span>
+                </button>
+            </div>
 
             <div id="audioContainer" class="audio-container" style="display: none;">
                 <audio id="audioPlayer" controls></audio>
@@ -307,7 +331,6 @@
     <footer>
         "Your word is a lamp for my feet, a light on my path." — Psalm 119:105
     </footer>
-
     <script>
         // Define all biblical books with their chapter counts
         const bibleData = {
@@ -388,6 +411,7 @@
         const chapterInput = document.getElementById('chapterInput');
         const chapterButtons = document.getElementById('chapterButtons');
         const listenBtn = document.getElementById('listenBtn');
+        const randomBtn = document.getElementById('randomBtn');
         const audioContainer = document.getElementById('audioContainer');
         const audioPlayer = document.getElementById('audioPlayer');
         const loadingContainer = document.getElementById('loadingContainer');
@@ -400,7 +424,7 @@
         let currentBook = bibleData.old[0].name;
         let currentChapter = 1;
         let darkMode = false;
-
+        
         // Initialize the page
         function init() {
             populateBookSelect();
@@ -485,18 +509,59 @@
             return bibleData[currentTestament].find(book => book.name === currentBook);
         }
 
-        // Format book name for URL
+        // Select a random passage
+        function selectRandomPassage() {
+            // Randomly choose testament
+            const randomTestament = Math.random() < 0.5 ? 'old' : 'new';
+            currentTestament = randomTestament;
+            
+            // Update testament buttons
+            testamentBtns.forEach(btn => {
+                if (btn.dataset.testament === currentTestament) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Randomly choose book
+            const books = bibleData[currentTestament];
+            const randomBookIndex = Math.floor(Math.random() * books.length);
+            const randomBook = books[randomBookIndex];
+            currentBook = randomBook.name;
+            
+            // Update book select
+            populateBookSelect();
+            bookSelect.value = currentBook;
+            
+            // Randomly choose chapter
+            currentChapter = Math.floor(Math.random() * randomBook.chapters) + 1;
+            chapterInput.value = currentChapter;
+            
+            // Update UI
+            updateChapterButtons();
+            
+            // Show a message
+            verseText.innerHTML = `<p>Randomly selected: <strong>${currentBook} ${currentChapter}</strong></p>`;
+            verseText.style.display = 'block';
+            
+            // Load the audio
+            loadAudio();
+        }
+
+        // Format book name for URL - FIXED FUNCTION
         function formatBookNameForUrl(bookName) {
-            // Replace spaces with underscores and handle special characters
-            return bookName.replace(/\s+/g, '_').replace(/\d+/g, match => {
-                // Convert numeric prefixes like "1" in "1 Samuel" to "I"
-                if (match === "1") return "I_";
-                if (match === "2") return "II_";
-                if (match === "3") return "III_";
+            // Replace spaces and handle special characters for the audio URL
+            // Remove spaces completely as requested in the specifications
+            return bookName.replace(/\s+/g, '').replace(/(\d+)/g, match => {
+                // Convert numeric prefixes like "1" in "1 Samuel" to "I", etc.
+                if (match === "1") return "1";
+                if (match === "2") return "2";
+                if (match === "3") return "3";
                 return match;
             });
         }
-
+        
         // Load audio for the selected passage
         function loadAudio() {
             // Show loading state
@@ -504,10 +569,10 @@
             audioContainer.style.display = 'none';
             verseText.style.display = 'none';
             
-            // Format the book name properly for the URL
+            // Format the book name properly for the URL - FIXED CALL
             const formattedBook = formatBookNameForUrl(currentBook);
             
-            // Use proper URL formatting
+            // Use proper URL formatting with no spaces as per instruction
             const audioUrl = `https://www.stmarysnova.org/cgi-bin/gspeech.cgi?verses=${formattedBook}%20${currentChapter}`;
             
             // Create a new audio element each time to avoid caching issues
@@ -580,13 +645,46 @@
             document.body.appendChild(iframe);
         }
         
-        // Fetch the text for the selected passage
+        // Fetch the text for the selected passage from Bible.org API
         function fetchVerseText() {
-            // In a real application, this would make an API call to get the verse text
-            verseText.innerHTML = `<strong>${currentBook} ${currentChapter}</strong><br><br>
-                                  <em>(Audio is now playing. Text for this passage would appear here in a complete implementation.)</em>`;
+            // Format the passage for the API
+            const passage = `${currentBook} ${currentChapter}`;
+            const apiUrl = `https://labs.bible.org/api/?passage=${encodeURIComponent(passage)}&type=json`;
+            
+            // Show loading message
+            verseText.innerHTML = `<p>Loading text for ${passage}...</p>`;
             verseText.style.display = 'block';
+            
+            // Fetch the verse text using JSONP (since the API might not support CORS)
+            const script = document.createElement('script');
+            script.src = `${apiUrl}&callback=handleVerseResponse`;
+            document.body.appendChild(script);
+            
+            // Clean up after 10 seconds (in case of failure)
+            setTimeout(() => {
+                document.body.removeChild(script);
+            }, 10000);
         }
+        
+        // Handle the response from the Bible.org API
+        window.handleVerseResponse = function(data) {
+            // Check if we got valid data
+            if (!data || data.length === 0) {
+                verseText.innerHTML = `<p>No text available for ${currentBook} ${currentChapter}. The API may be unavailable or the passage reference is incorrect.</p>`;
+                return;
+            }
+            
+            // Build HTML for the verses
+            let html = `<h3>${currentBook} ${currentChapter}</h3>`;
+            
+            data.forEach(verse => {
+                html += `<p><sup>${verse.verse}</sup> ${verse.text}</p>`;
+            });
+            
+            // Update the verse text container
+            verseText.innerHTML = html;
+            verseText.style.display = 'block';
+        };
 
         // Toggle dark/light theme
         function toggleTheme() {
@@ -634,6 +732,9 @@
             
             // Listen button
             listenBtn.addEventListener('click', loadAudio);
+            
+            // Random button
+            randomBtn.addEventListener('click', selectRandomPassage);
         }
 
         // Initialize on page load
