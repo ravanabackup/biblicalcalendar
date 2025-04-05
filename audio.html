@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -138,7 +139,7 @@
         }
 
         select, input {
-            width: 100%;
+            width: 90%;
             padding: 10px;
             border: 1px solid var(--border);
             border-radius: 5px;
@@ -241,7 +242,7 @@
             bottom: 10%;
             right: 5%;
             font-size: 10rem;
-            transform: rotate(180deg);
+            transform: rotate(0deg);
         }
 
         .loading {
@@ -266,8 +267,8 @@
     </style>
 </head>
 <body>
-    <div class="decoration decoration-1">✝</div>
-    <div class="decoration decoration-2">✝</div>
+    <div class="decoration decoration-1">✟</div>
+    <div class="decoration decoration-2">✟</div>
     
     <div class="container">
         <header>
@@ -329,7 +330,7 @@
     </div>
 
     <footer>
-        "Your word is a lamp for my feet, a light on my path." — Psalm 119:105
+    <div id="verseOfTheDay"></div>
     </footer>
     <script>
         // Define all biblical books with their chapter counts
@@ -739,6 +740,32 @@ function selectRandomPassage() {
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', init);
+        
+        // Fetch and display the verse of the day
+    function fetchVerseOfTheDay() {
+        const script = document.createElement('script');
+        script.src = 'https://labs.bible.org/api/?passage=votd&type=json&callback=displayVerseOfTheDay';
+        document.body.appendChild(script);
+
+        // Clean up script element after 10 seconds
+        setTimeout(() => {
+            document.body.removeChild(script);
+        }, 10000);
+    }
+
+    // Callback function to display the verse of the day
+    function displayVerseOfTheDay(data) {
+        if (data && data.length > 0) {
+            const verse = data[0];
+            const verseText = `<p>"${verse.text}" — ${verse.bookname} ${verse.chapter}:${verse.verse}</p>`;
+            document.getElementById('verseOfTheDay').innerHTML = verseText;
+        } else {
+            document.getElementById('verseOfTheDay').innerHTML = '<p>Verse of the day not available.</p>';
+        }
+    }
+
+    // Fetch verse of the day on page load
+    document.addEventListener('DOMContentLoaded', fetchVerseOfTheDay);
     </script>
 </body>
 </html>
