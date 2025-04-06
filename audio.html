@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -94,6 +93,76 @@
             box-shadow: 0 4px 8px var(--shadow);
             margin-bottom: 30px;
             border-left: 4px solid var(--accent);
+        }
+
+        /* Search bar styling */
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 98%;
+            padding: 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 5px;
+            background-color: var(--card-bg);
+            color: var(--text);
+            font-family: 'Georgia', serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px var(--shadow);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0 0 5px 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .search-results.show {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s;
+        }
+
+        .search-result-item:hover {
+            background-color: var(--background);
+        }
+
+        .search-result-item .testament-tag {
+            font-size: 0.8rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+            background-color: var(--secondary);
+            color: var(--card-bg);
         }
 
         .controls {
@@ -278,6 +347,13 @@
         </header>
 
         <div class="main-card">
+            <!-- Search bar -->
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search for any book..." aria-label="Search for any book">
+                <span class="search-icon">🔍</span>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+
             <div class="testament-selector">
                 <button class="testament-btn active" data-testament="old">Old Testament</button>
                 <button class="testament-btn" data-testament="new">New Testament</button>
@@ -419,6 +495,8 @@
         const verseText = document.getElementById('verseText');
         const themeToggle = document.getElementById('themeToggle');
         const testamentBtns = document.querySelectorAll('.testament-btn');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
 
         // Current state
         let currentTestament = 'old';
@@ -431,23 +509,124 @@
             populateBookSelect();
             updateChapterButtons();
             setupEventListeners();
+            setupSearchFunctionality();
         }
 
-       // Populate the book dropdown
-function populateBookSelect() {
-    bookSelect.innerHTML = '';
-    const books = bibleData[currentTestament];
-    
-    books.forEach(book => {
-        const option = document.createElement('option');
-        option.value = book.name;
-        option.textContent = book.name;
-        bookSelect.appendChild(option);
-    });
-    
-    // Don't reset the current book here, just update the chapter input
-    updateChapterInput();
-}
+        // Setup search functionality
+        function setupSearchFunctionality() {
+            // Add event listener for search input
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.trim().toLowerCase();
+                
+                // Clear results if search term is empty
+                if (searchTerm === '') {
+                    searchResults.innerHTML = '';
+                    searchResults.classList.remove('show');
+                    return;
+                }
+                
+                // Search through all books in both testaments
+                const allResults = [];
+                
+                // Helper function to search books and add to results
+                const searchTestament = (testament, testamentName) => {
+                    bibleData[testament].forEach(book => {
+                        if (book.name.toLowerCase().includes(searchTerm)) {
+                            allResults.push({
+                                name: book.name,
+                                testament: testament,
+                                displayTestament: testamentName
+                            });
+                        }
+                    });
+                };
+                
+                // Search both testaments
+                searchTestament('old', 'Old Testament');
+                searchTestament('new', 'New Testament');
+                
+                // Display results
+                if (allResults.length > 0) {
+                    searchResults.innerHTML = '';
+                    allResults.forEach(result => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        resultItem.innerHTML = `${result.name} <span class="testament-tag">${result.displayTestament}</span>`;
+                        
+                        // Add click event to select this book
+                        resultItem.addEventListener('click', function() {
+                            selectBookFromSearch(result.testament, result.name);
+                            searchInput.value = '';
+                            searchResults.classList.remove('show');
+                        });
+                        
+                        searchResults.appendChild(resultItem);
+                    });
+                    searchResults.classList.add('show');
+                } else {
+                    searchResults.innerHTML = '<div class="search-result-item">No books found</div>';
+                    searchResults.classList.add('show');
+                }
+            });
+            
+            // Hide search results when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!searchInput.contains(event.target) && !searchResults.contains(event.target)) {
+                    searchResults.classList.remove('show');
+                }
+            });
+        }
+        
+        // Function to select a book from search results
+        function selectBookFromSearch(testament, bookName) {
+            // Switch testament if needed
+            if (testament !== currentTestament) {
+                currentTestament = testament;
+                
+                // Update testament buttons
+                testamentBtns.forEach(btn => {
+                    if (btn.dataset.testament === currentTestament) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // Repopulate book select for the new testament
+                populateBookSelect();
+            }
+            
+            // Select the book
+            currentBook = bookName;
+            bookSelect.value = bookName;
+            
+            // Reset chapter to 1
+            currentChapter = 1;
+            chapterInput.value = 1;
+            
+            // Update UI
+            updateChapterButtons();
+            
+            // Show a message about the selection
+            verseText.innerHTML = `<p>Selected: <strong>${bookName}</strong> from the ${testament === 'old' ? 'Old' : 'New'} Testament</p>`;
+            verseText.style.display = 'block';
+        }
+
+        // Populate the book dropdown
+        function populateBookSelect() {
+            bookSelect.innerHTML = '';
+            const books = bibleData[currentTestament];
+            
+            books.forEach(book => {
+                const option = document.createElement('option');
+                option.value = book.name;
+                option.textContent = book.name;
+                bookSelect.appendChild(option);
+            });
+            
+            // Don't reset the current book here, just update the chapter input
+            updateChapterInput();
+        }
 
         // Update chapter buttons based on selected book
         function updateChapterButtons() {
@@ -511,46 +690,47 @@ function populateBookSelect() {
         }
 
        // Select a random passage
-function selectRandomPassage() {
-    // Randomly choose testament
-    const randomTestament = Math.random() < 0.5 ? 'old' : 'new';
-    currentTestament = randomTestament;
-    
-    // Update testament buttons
-    testamentBtns.forEach(btn => {
-        if (btn.dataset.testament === currentTestament) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
+        function selectRandomPassage() {
+            // Randomly choose testament
+            const randomTestament = Math.random() < 0.5 ? 'old' : 'new';
+            currentTestament = randomTestament;
+            
+            // Update testament buttons
+            testamentBtns.forEach(btn => {
+                if (btn.dataset.testament === currentTestament) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Randomly choose book
+            const books = bibleData[currentTestament];
+            const randomBookIndex = Math.floor(Math.random() * books.length);
+            const randomBook = books[randomBookIndex];
+            currentBook = randomBook.name;
+            
+            // Update book select - rebuild the dropdown first
+            populateBookSelect();
+            // Then explicitly set the selected value to our random book
+            bookSelect.value = currentBook;
+            
+            // Randomly choose chapter
+            currentChapter = Math.floor(Math.random() * randomBook.chapters) + 1;
+            chapterInput.value = currentChapter;
+            
+            // Update UI
+            updateChapterButtons();
+            
+            // Show a message
+            verseText.innerHTML = `<p>Randomly selected: <strong>${currentBook} ${currentChapter}</strong></p>`;
+            verseText.style.display = 'block';
+            
+            // Load the audio
+            loadAudio();
         }
-    });
-    
-    // Randomly choose book
-    const books = bibleData[currentTestament];
-    const randomBookIndex = Math.floor(Math.random() * books.length);
-    const randomBook = books[randomBookIndex];
-    currentBook = randomBook.name;
-    
-    // Update book select - rebuild the dropdown first
-    populateBookSelect();
-    // Then explicitly set the selected value to our random book
-    bookSelect.value = currentBook;
-    
-    // Randomly choose chapter
-    currentChapter = Math.floor(Math.random() * randomBook.chapters) + 1;
-    chapterInput.value = currentChapter;
-    
-    // Update UI
-    updateChapterButtons();
-    
-    // Show a message
-    verseText.innerHTML = `<p>Randomly selected: <strong>${currentBook} ${currentChapter}</strong></p>`;
-    verseText.style.display = 'block';
-    
-    // Load the audio
-    loadAudio();
-}
-        // Format book name for URL - FIXED FUNCTION
+        
+        // Format book name for URL
         function formatBookNameForUrl(bookName) {
             // Replace spaces and handle special characters for the audio URL
             // Remove spaces completely as requested in the specifications
@@ -570,7 +750,7 @@ function selectRandomPassage() {
             audioContainer.style.display = 'none';
             verseText.style.display = 'none';
             
-            // Format the book name properly for the URL - FIXED CALL
+            // Format the book name properly for the URL
             const formattedBook = formatBookNameForUrl(currentBook);
             
             // Use proper URL formatting with no spaces as per instruction
@@ -742,30 +922,30 @@ function selectRandomPassage() {
         document.addEventListener('DOMContentLoaded', init);
         
         // Fetch and display the verse of the day
-    function fetchVerseOfTheDay() {
-        const script = document.createElement('script');
-        script.src = 'https://labs.bible.org/api/?passage=votd&type=json&callback=displayVerseOfTheDay';
-        document.body.appendChild(script);
+        function fetchVerseOfTheDay() {
+            const script = document.createElement('script');
+            script.src = 'https://labs.bible.org/api/?passage=votd&type=json&callback=displayVerseOfTheDay';
+            document.body.appendChild(script);
 
-        // Clean up script element after 10 seconds
-        setTimeout(() => {
-            document.body.removeChild(script);
-        }, 10000);
-    }
-
-    // Callback function to display the verse of the day
-    function displayVerseOfTheDay(data) {
-        if (data && data.length > 0) {
-            const verse = data[0];
-            const verseText = `<p>"${verse.text}" — ${verse.bookname} ${verse.chapter}:${verse.verse}</p>`;
-            document.getElementById('verseOfTheDay').innerHTML = verseText;
-        } else {
-            document.getElementById('verseOfTheDay').innerHTML = '<p>Verse of the day not available.</p>';
+            // Clean up script element after 10 seconds
+            setTimeout(() => {
+                document.body.removeChild(script);
+            }, 10000);
         }
-    }
 
-    // Fetch verse of the day on page load
-    document.addEventListener('DOMContentLoaded', fetchVerseOfTheDay);
+        // Callback function to display the verse of the day
+        function displayVerseOfTheDay(data) {
+            if (data && data.length > 0) {
+                const verse = data[0];
+                const verseText = `<p>"${verse.text}" — ${verse.bookname} ${verse.chapter}:${verse.verse}</p>`;
+                document.getElementById('verseOfTheDay').innerHTML = verseText;
+            } else {
+                document.getElementById('verseOfTheDay').innerHTML = '<p>Verse of the day not available.</p>';
+            }
+        }
+
+        // Fetch verse of the day on page load
+        document.addEventListener('DOMContentLoaded', fetchVerseOfTheDay);
     </script>
 </body>
 </html>
