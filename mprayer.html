@@ -1,0 +1,590 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catholic Prayers</title>
+    <style>
+        :root {
+            --primary-color: #3a2a4d;
+            --secondary-color: #8a6fb5;
+            --accent-color: #c9b6e4;
+            --light-color: #f5f0ff;
+            --dark-color: #1a1a2e;
+            --highlight-color: #f0e8ff;
+            --active-border: #5a3f8f;
+        }
+        
+        body {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            background: linear-gradient(135deg, var(--light-color), #e0d4f3);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            background-color: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--secondary-color);
+            font-style: italic;
+            font-size: 1.2rem;
+        }
+        
+        .prayer-section {
+            background-color: #fcfaff;
+            border-radius: 0.8rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--secondary-color);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        }
+        
+        .prayer-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+        }
+        
+        /* Enhanced active state styling */
+        .prayer-section.active {
+            border-left: 6px solid var(--active-border);
+            background-color: var(--highlight-color);
+            box-shadow: 0 6px 20px rgba(90, 63, 143, 0.15);
+            transform: translateY(-3px);
+        }
+        
+        .prayer-section.active .prayer-content {
+            color: #000;
+            font-weight: 500;
+        }
+        
+        .prayer-section.active h2 {
+            color: var(--active-border);
+        }
+        
+        .prayer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+        
+        .prayer-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 1rem;
+            text-align: justify;
+            padding-right: 0.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .count-input {
+            width: 60px;
+            padding: 0.5rem;
+            text-align: center;
+            border: 2px solid var(--accent-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--primary-color);
+            background-color: var(--light-color);
+        }
+        
+        .count-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        label {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        button {
+            padding: 0.8rem 1.8rem;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .play-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .play-btn:hover {
+            background-color: #4b356a;
+            transform: translateY(-2px);
+        }
+        
+        .stop-btn {
+            background-color: #d95562;
+            color: white;
+        }
+        
+        .stop-btn:hover {
+            background-color: #c44955;
+            transform: translateY(-2px);
+        }
+        
+        .reset-btn {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            border: 2px solid var(--accent-color);
+        }
+        
+        .reset-btn:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            font-style: italic;
+            color: var(--secondary-color);
+            min-height: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--light-color);
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            transition: width 0.3s linear;
+        }
+        
+        footer {
+            margin-top: auto;
+            width: 100%;
+            text-align: center;
+            padding: 1rem 0;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .cross {
+            display: inline-block;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin: 0 0.5rem;
+        }
+        
+        /* Highlight effect for active text */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(90, 63, 143, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(90, 63, 143, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(90, 63, 143, 0); }
+        }
+        
+        .prayer-section.active {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Line highlighting */
+        .prayer-content span {
+            transition: background-color 0.3s ease;
+        }
+        
+        .prayer-section.active .prayer-content span {
+            background-color: rgba(201, 182, 228, 0.2);
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .prayer-header {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .prayer-content {
+                font-size: 1rem;
+            }
+            
+            .player-controls {
+                flex-direction: column;
+                gap: 0.7rem;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Catholic Prayers</h1>
+            <p class="subtitle">Faith through spoken word and meditation</p>
+        </header>
+        
+        <div class="prayer-section" id="nicene-section">
+            <div class="prayer-header">
+                <h2>Nicene Creed</h2>
+                <div class="controls">
+                    <label for="nicene-count">Repetitions:</label>
+                    <input type="number" id="nicene-count" class="count-input" min="1" value="1">
+                </div>
+            </div>
+            <div class="prayer-content">
+<span>Sarvasakthiyulla pithaavaaye aakaasathinteyum bhoomiyudeyum ... kaanappedunnavayum kaanappedathavayumaya sakalathinteyum srishtavaya sathyeka daivathil njangal viswasikkunnu.</span> <br><br>
+<span>Daivathinte eka puthranum sarvalokangalkum mumbil pithavil ninnu janichavanum, prakasathil ninnulla prakasavum sathya daivathil ninnulla sathya daivavum, janichavanum, srishti allathavanum, saaraamsathil pithaavinodu samathvamullavanum, sakalavum thaan mukhaantiramaayi nirmichavanum, manushyaraaya njangalkum njangalude rakshakkum vendi thirumanassaya prakaram + swargathil ninnirangi visudha roohaayil ninnum, daivamaathaavaaya visudha kanya mariyaamil ninnum + sareeriyayi theernnu manushyanayee Pontios Pilaathosinte divasangalil njangalkkuvendi + kurishil tharakkappettu kashtam anubhavichu marichu adakkappettu, moonnaam divasam uyirthezhunnettu swargathilekku kareri thante pithavinte valathubhaga-thu irunnavanum, Jeevanullavareyum marichavareyum vidhippaan thante valiya mahathvathode iniyum varuvaani- rikkunnavanum, thante raajyathinu avasanamillaatha- vanumaya yesumesiha aaya eka Karthaavilum njangal viswasikkunnu.</span> <br><br>
+<span>Sakalatheyum jeevippikkunna Karthavum, pithavil ninnu purappettu, pithaavinodum puthranodum koode vannikkappettu sthuthikkappedunnavanum nibiyanmarum sleehanmarum mukhaandaram samsaarichavanumaaya jeevanum visudhiyumulla eka roohaayilum, caatholikavum slaiheekavumaaya eka visudha sabhayilum njangal viswasikkunnu.</span> <br><br>
+<span>Paapamochanathinu maamodeessa onnu mathramakunnu ennu njangal ettuparanju marichupoyavarude uyirppinum, varuvaanirikkunna lokathile puthiya jeevanumaayi njangal nokkipparkkunnu. Amen.</span> <br><br>
+</div>
+        </div>
+        
+        <div class="prayer-section" id="lords-section">
+            <div class="prayer-header">
+                <h2>Lord's Prayer</h2>
+                <div class="controls">
+                    <label for="lords-count">Repetitions:</label>
+                    <input type="number" id="lords-count" class="count-input" min="1" value="1">
+                </div>
+            </div>
+            <div class="prayer-content">
+                
+<span>Pithaavinum Puthranum Parishuddha Roohaaykkum Sthuthi Aadi Muthal Ennekkum Thanne, Aammeen.</span> <br><br>
+<span>Thante Sthuthikalaal Aakaashavum, Bhoomiyum Niranjnjirikkunna Balavaanaaya Daivam Thampuraan Parishuddhan Parishuddhan Parishuddhan Uyarangngalil Ooshaana.</span> <br><br>
+<span>Daivamaaya Karththaavinte Thiru Naamaththil Vannavanum, Varuvaanirikkunnavanum Vaazhththappettavanaakunnu Uyarangngalil Sthuthi.</span> <br><br>
+<span>Daivame Nee Shuddhamullavanaakunnu Balavaane Nee Shuddhamullavanaakunnu Maranamillaaththavane Nee Shuddhamullavanaakunnu Njangngalkku Venti +Kurishikkappettavane Njangngalute Mel Anugraham Cheyyaname.</span> <br><br>
+<span>Daivame Nee Shuddhamullavanaakunnu Balavaane Nee Shuddhamullavanaakunnu Maranamillaaththavane Nee Shuddhamullavanaakunnu Njangngalkku Venti +Kurishikkappettavane Njangngalute Mel Anugraham Cheyyaname.</span> <br><br>
+<span>Daivame Nee Shuddhamullavanaakunnu Balavaane Nee Shuddhamullavanaakunnu Maranamillaaththavane Nee Shuddhamullavanaakunnu Njangngalkku Venti +Kurishikkappettavane Njangngalute Mel Anugraham Cheyyaname.</span> <br><br>
+<span>Njangngalute Karththaave Njangngalute Mel Anugraham Cheyyaname Njangngalute Karththaave Krhupayuntaayi Njangngalute Mel Anugraham Cheyyaname Njangngalute Karththaave Njangngalute Namaskkaaravum Shushrooshayum Kaikkontu Njangngalute Mel Anugraham Cheyyaname</span> <br><br>
+<span>Daivame Ninakku Sthuthi Srashtaave Ninakku Sthuthi Paapikalaaya Ninte Atiyaarotu Karuna Cheyyunna Mashihaa Raajaave Ninakku Sthuthi, Baarekmor.</span> <br><br>
+<span>Swarggasthanaaya Njangngalute Pithaave Ninte Thirunaamam Parishuddhamaakkappetename Ninte Raajyam Varename Ninte Thiruvishtam Swarggaththileppole Bhoomiyilum Aakename Njangngalkkaavashyamulla Appam Innum Njangngalkku Tharename Njangngalute Katakkaarotu Njangngal Kshamichchathu Pole Njangngalute Katangngalum Paapangngalum Njangngalotu Kshamikkename Pareekshayilekku Njangngale Praveshippikkaruthe Pinneyo Dushtanil Ninnu Njangngale Rakshichchu Kollaname Enthu Kontennaal Raajyavum Shakthiyum Mahathwavum Ennekkum Ninakkullathaakunnu, Aammeen.</span>
+            </div>
+        </div>
+        
+        <div class="prayer-section" id="hail-mary-section">
+            <div class="prayer-header">
+                <h2>Hail Mary</h2>
+                <div class="controls">
+                    <label for="hail-mary-count">Repetitions:</label>
+                    <input type="number" id="hail-mary-count" class="count-input" min="1" value="1">
+                </div>
+            </div>
+            <div class="prayer-content">
+                <span>Nanma Niranja Mariyamme, Swasthi. Karthaavu Angayodu koode, Sthreekalil Angu Anugrahikka pettaval aakunu. Angayude Udharathin Bhalamaaya Eesho Anugrahakkipettavan aakunu.</span> <br><br>
+<span>Parishudha Mariyame, Thamburante Amme, Papikalaaya Njangalkku Vendi, Epozhum Njangalude Marana Samayathum Thamburanodu Apeshikaname. Amen</span>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="prayer-progress"></div>
+        </div>
+        
+        <div class="status" id="status-message"></div>
+        
+        <div class="player-controls">
+            <button class="play-btn" id="play-btn">Play Prayers</button>
+            <button class="stop-btn" id="stop-btn" disabled>Stop</button>
+            <button class="reset-btn" id="reset-btn">Reset</button>
+        </div>
+    </div>
+    
+    <footer>
+        <span class="cross">✝</span> May these prayers guide your spiritual journey <span class="cross">✝</span>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Audio elements
+            const niceneAudio = new Audio('https://raw.githubusercontent.com/ravanabackup/biblicalcalendar/refs/heads/main/audio%20prayer/nicene%20creed.mp3');
+            const lordsAudio = new Audio('https://raw.githubusercontent.com/ravanabackup/biblicalcalendar/refs/heads/main/audio%20prayer/lords%20prayer.mp3');
+            const hailMaryAudio = new Audio('https://raw.githubusercontent.com/ravanabackup/biblicalcalendar/refs/heads/main/audio%20prayer/hail%20mary%20prayer.mp3');
+            
+            // Elements
+            const playBtn = document.getElementById('play-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const statusMessage = document.getElementById('status-message');
+            const progressBar = document.getElementById('prayer-progress');
+            
+            // Sections
+            const niceneSection = document.getElementById('nicene-section');
+            const lordsSection = document.getElementById('lords-section');
+            const hailMarySection = document.getElementById('hail-mary-section');
+            
+            // Input elements
+            const niceneCount = document.getElementById('nicene-count');
+            const lordsCount = document.getElementById('lords-count');
+            const hailMaryCount = document.getElementById('hail-mary-count');
+            
+            // Initialize variables
+            let isPlaying = false;
+            let currentAudio = null;
+            let prayerQueue = [];
+            let currentPrayerIndex = 0;
+            let totalPrayers = 0;
+            let completedPrayers = 0;
+            
+            // Validate inputs to ensure they're positive numbers
+            function validateInput(input) {
+                const value = parseInt(input.value);
+                if (isNaN(value) || value < 1) {
+                    input.value = 1;
+                    return 1;
+                }
+                return value;
+            }
+            
+            // Reset all counts to 1
+            function resetCounts() {
+                niceneCount.value = 1;
+                lordsCount.value = 1;
+                hailMaryCount.value = 1;
+            }
+            
+            // Reset the state
+            function resetState() {
+                isPlaying = false;
+                currentAudio = null;
+                prayerQueue = [];
+                currentPrayerIndex = 0;
+                totalPrayers = 0;
+                completedPrayers = 0;
+                progressBar.style.width = '0%';
+                statusMessage.textContent = '';
+                playBtn.disabled = false;
+                stopBtn.disabled = true;
+                
+                // Reset active sections
+                niceneSection.classList.remove('active');
+                lordsSection.classList.remove('active');
+                hailMarySection.classList.remove('active');
+                
+                // Stop all audio
+                niceneAudio.pause();
+                niceneAudio.currentTime = 0;
+                lordsAudio.pause();
+                lordsAudio.currentTime = 0;
+                hailMaryAudio.pause();
+                hailMaryAudio.currentTime = 0;
+            }
+            
+            // Build the prayer queue based on input counts
+            function buildPrayerQueue() {
+                prayerQueue = [];
+                
+                // Add Nicene Creed repetitions
+                const niceneRepeats = validateInput(niceneCount);
+                for (let i = 0; i < niceneRepeats; i++) {
+                    prayerQueue.push({
+                        audio: niceneAudio,
+                        name: 'Nicene Creed',
+                        section: niceneSection
+                    });
+                }
+                
+                // Add Lord's Prayer repetitions
+                const lordsRepeats = validateInput(lordsCount);
+                for (let i = 0; i < lordsRepeats; i++) {
+                    prayerQueue.push({
+                        audio: lordsAudio,
+                        name: 'Lord\'s Prayer',
+                        section: lordsSection
+                    });
+                }
+                
+                // Add Hail Mary repetitions
+                const hailMaryRepeats = validateInput(hailMaryCount);
+                for (let i = 0; i < hailMaryRepeats; i++) {
+                    prayerQueue.push({
+                        audio: hailMaryAudio,
+                        name: 'Hail Mary',
+                        section: hailMarySection
+                    });
+                }
+                
+                totalPrayers = prayerQueue.length;
+                return prayerQueue.length > 0;
+            }
+            
+            // Play the next prayer in the queue
+            function playNextPrayer() {
+                // Reset active sections
+                niceneSection.classList.remove('active');
+                lordsSection.classList.remove('active');
+                hailMarySection.classList.remove('active');
+                
+                if (currentPrayerIndex < prayerQueue.length) {
+                    const currentPrayer = prayerQueue[currentPrayerIndex];
+                    currentAudio = currentPrayer.audio;
+                    
+                    // Highlight active section with enhanced visual feedback
+                    currentPrayer.section.classList.add('active');
+                    
+                    // Scroll to the active prayer section
+                    currentPrayer.section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Update status with more details
+                    const repetitionCount = countRepetitions(currentPrayer.name, currentPrayerIndex);
+                    statusMessage.textContent = `Now Playing: ${currentPrayer.name} (${repetitionCount.current} of ${repetitionCount.total})`;
+                    
+                    // Update progress
+                    completedPrayers = currentPrayerIndex;
+                    updateProgress();
+                    
+                    // Play audio
+                    currentAudio.currentTime = 0;
+                    currentAudio.play();
+                    
+                    // Set up the next prayer when this one ends
+                    currentAudio.onended = function() {
+                        currentPrayerIndex++;
+                        setTimeout(playNextPrayer, 1000); // 1-second pause between prayers
+                    };
+                } else {
+                    // All prayers completed
+                    completedPrayers = totalPrayers;
+                    updateProgress();
+                    statusMessage.textContent = 'All prayers completed.';
+                    resetState();
+                }
+            }
+            
+            // Count current repetition of a specific prayer
+            function countRepetitions(prayerName, currentIndex) {
+                let total = 0;
+                let current = 0;
+                
+                for (let i = 0; i < prayerQueue.length; i++) {
+                    if (prayerQueue[i].name === prayerName) {
+                        total++;
+                        if (i <= currentIndex) {
+                            current++;
+                        }
+                    }
+                }
+                
+                return { total, current };
+            }
+            
+            // Update progress bar
+            function updateProgress() {
+                const progress = (completedPrayers / totalPrayers) * 100;
+                progressBar.style.width = progress + '%';
+            }
+            
+            // Event listeners
+            playBtn.addEventListener('click', function() {
+                if (!isPlaying && buildPrayerQueue()) {
+                    isPlaying = true;
+                    playBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    currentPrayerIndex = 0;
+                    completedPrayers = 0;
+                    playNextPrayer();
+                }
+            });
+            
+            stopBtn.addEventListener('click', function() {
+                resetState();
+            });
+            
+            resetBtn.addEventListener('click', function() {
+                resetState();
+                resetCounts();
+            });
+            
+            // Input validation
+            niceneCount.addEventListener('change', function() {
+                validateInput(this);
+            });
+            
+            lordsCount.addEventListener('change', function() {
+                validateInput(this);
+            });
+            
+            hailMaryCount.addEventListener('change', function() {
+                validateInput(this);
+            });
+            
+            // Preload audio
+            function preloadAudio() {
+                niceneAudio.load();
+                lordsAudio.load();
+                hailMaryAudio.load();
+            }
+            
+            // Initialize
+            preloadAudio();
+        });
+    </script>
+</body>
+</html>
