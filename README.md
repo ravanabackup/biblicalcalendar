@@ -3,7 +3,7 @@ https://www.stmarysnova.org/church-calendar
 nicene creed
 
 Sarvasakthiyulla pithaavaaye aakaasathinteyum bhoomiyudeyum ...
-kaanappedunnavayum kaanappedathavayumaya sakalathinteyum srishtavaya sathyeka daivathil (njangal viswasikkunnu).
+kaanappedunnavayum kaanappedathavayumaya sakalathinteyum srishtavaya sathyeka daivathil njangal viswasikkunnu.
 Daivathinte eka puthranum sarvalokangalkum mumbil
 pithavil ninnu janichavanum, prakasathil ninnulla prakasavum
 sathya daivathil ninnulla sathya daivavum, janichavanum, srishti
@@ -15,10 +15,10 @@ Pilaathosinte divasangalil njangalkkuvendi + kurishil tharakkappettu kashtam anu
 pithavinte valathubhaga-thu irunnavanum, Jeevanullavareyum
 marichavareyum vidhippaan thante valiya mahathvathode
 iniyum varuvaani- rikkunnavanum, thante raajyathinu avasanamillaatha- vanumaya yesumesiha aaya eka Karthaavilum
-(njangal viswasikkunnu).
+njangal viswasikkunnu.
 Sakalatheyum jeevippikkunna Karthavum, pithavil ninnu
 purappettu, pithaavinodum puthranodum koode vannikkappettu sthuthikkappedunnavanum nibiyanmarum sleehanmarum mukhaandaram samsaarichavanumaaya jeevanum
-visudhiyumulla eka roohaayilum, caatholikavum slaiheekavumaaya eka visudha sabhayilum (njangal viswasikkunnu).
+visudhiyumulla eka roohaayilum, caatholikavum slaiheekavumaaya eka visudha sabhayilum njangal viswasikkunnu.
 Paapamochanathinu maamodeessa onnu mathramakunnu
 ennu njangal ettuparanju marichupoyavarude uyirppinum,
 varuvaanirikkunna lokathile puthiya jeevanumaayi njangal
@@ -79,13 +79,11 @@ Ennekkum Ninakkullathaakunnu, Aammeen.
 
 hail mary prayer
 
-Krhupa Niranjnja Mariyame
-Ninakku Samaadhaanam
-Nammute Karththaavu Ninnotu Koote
-Sthreekalil Vaazhththappettaval Neeyaakunnu
-Ninte Vayattile Phalamaaya
-Nammute Karththaaveshu Mashihaa Vaazhththappettavanaakunnu
-Shuddhamulla Kanyaka Maarththa Mariyame,
-Thampuraante Amme, Paapikalaaya Njangngalkku Venti
-Ippozhum, Eppozhum, Njangngalute Marana Samayaththum
-Daivam Thampuraanotu Nee Apekshichchu Kollaname, Aammeen.
+Nanma Niranja Mariyamme, Swasthi.
+Karthaavu Angayodu koode,
+Sthreekalil Angu Anugrahikka pettaval aakunu.
+Angayude Udharathin Bhalamaaya Eesho Anugrahakkipettavan aakunu.
+Parishudha Mariyame, Thamburante Amme,
+Papikalaaya Njangalkku Vendi,
+Epozhum Njangalude Marana Samayathum Thamburanodu Apeshikaname.
+Amen
