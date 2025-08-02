@@ -198,7 +198,7 @@
       border-color: var(--vibrant-red);
       border-width: 2px;
     }
-    
+
     .today .day-number {
       color: var(--on-vibrant-red);
       font-weight: 700;
@@ -334,7 +334,7 @@
       }
     }
 
-    .details-panel {
+    .details-panel-pc {
       background-color: var(--md-sys-color-surface-container);
       border-radius: 24px;
       padding: 24px;
@@ -342,16 +342,37 @@
       transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
     }
 
-    .details-panel.hidden {
+    .details-panel-pc.hidden {
       opacity: 0;
       transform: translateX(24px) scale(0.95);
       pointer-events: none;
     }
 
-    .details-panel.visible {
+    .details-panel-pc.visible {
       opacity: 1;
       transform: translateX(0) scale(1);
       pointer-events: all;
+    }
+
+    .details-panel-mobile {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-height: 80vh;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+      z-index: 500;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.15);
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+      display: none; /* Hide by default */
+    }
+
+    .details-panel-mobile.visible {
+      transform: translateY(0);
+      display: block; /* Show when visible */
     }
 
     .section-title {
@@ -364,16 +385,13 @@
   </style>
 </head>
 <body class="min-h-screen p-4 lg:p-6">
-  <!-- Theme Toggle FAB -->
   <button id="theme-toggle" class="fab" aria-label="Toggle theme">
     <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
     </svg>
   </button>
 
-  <!-- Modified App container for center/left slide -->
   <div id="app" class="surface rounded-3xl shadow-2xl w-full max-w-7xl mx-auto flex flex-col xl:flex-row p-6 lg:p-8 space-y-8 xl:space-y-0 xl:space-x-8 justify-center items-start transition-all duration-500 ease-out-back">
-    <!-- Calendar -->
     <div id="calendar-container" class="xl:w-2/3">
       <div class="flex items-center justify-between mb-8">
         <button id="prev-month" class="header-button">
@@ -402,15 +420,32 @@
       <div id="calendar-grid" class="grid grid-cols-7 gap-3"></div>
     </div>
 
-    <!-- Event Details -->
-    <div id="details-panel" class="xl:w-1/3 details-panel hidden flex-col justify-start">
+    <div id="details-panel-pc" class="hidden xl:flex xl:w-1/3 details-panel-pc flex-col justify-start">
       <h3 class="section-title">Event Details</h3>
-      <div id="event-details" class="space-y-4">
+      <div id="event-details-pc" class="space-y-4">
         <div class="flex items-center justify-center h-32">
           <p class="text-center" style="color: var(--md-sys-color-on-surface-variant);">
             Click on a date with an event to see details
           </p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="details-panel-mobile" class="details-panel-mobile surface-container xl:hidden">
+    <div class="p-4 flex justify-between items-center border-b border-b-outline-variant">
+      <h3 class="text-lg font-semibold" style="color: var(--md-sys-color-on-surface);">Event Details</h3>
+      <button id="close-mobile-details" class="p-2 rounded-full hover:bg-surface-container-highest">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div id="event-details-mobile" class="p-4 overflow-y-auto">
+      <div class="flex items-center justify-center h-32">
+        <p class="text-center" style="color: var(--md-sys-color-on-surface-variant);">
+          Click on a date with an event to see details
+        </p>
       </div>
     </div>
   </div>
@@ -424,8 +459,16 @@
     const appContainer = document.getElementById('app');
     const calendarGrid = document.getElementById("calendar-grid");
     const monthYearDisplay = document.getElementById("month-year-display");
-    const eventDetails = document.getElementById("event-details");
-    const detailsPanel = document.getElementById("details-panel");
+    
+    // PC Panel Elements
+    const detailsPanelPC = document.getElementById("details-panel-pc");
+    const eventDetailsPC = document.getElementById("event-details-pc");
+
+    // Mobile Panel Elements
+    const detailsPanelMobile = document.getElementById("details-panel-mobile");
+    const eventDetailsMobile = document.getElementById("event-details-mobile");
+    const closeMobileDetailsBtn = document.getElementById("close-mobile-details");
+
     const prevMonthBtn = document.getElementById("prev-month");
     const nextMonthBtn = document.getElementById("next-month");
     const themeToggle = document.getElementById("theme-toggle");
@@ -466,7 +509,7 @@
         renderCalendar(currentMonth, currentYear);
       } catch (err) {
         console.error("Error fetching events:", err);
-        eventDetails.innerHTML = `
+        const errorHtml = `
           <div class="event-card">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-2 h-2 rounded-full" style="background-color: var(--md-sys-color-error);"></div>
@@ -477,6 +520,8 @@
             </p>
           </div>
         `;
+        eventDetailsPC.innerHTML = errorHtml;
+        eventDetailsMobile.innerHTML = errorHtml;
       }
     };
 
@@ -510,6 +555,7 @@
         const dateKey = `${month + 1}/${day}`;
         const dayCell = document.createElement('div');
         dayCell.className = "day-cell";
+        dayCell.setAttribute('role', 'button');
 
         // Highlight today with the vibrant red theme
         if (isCurrentMonth && day === currentDay) {
@@ -561,23 +607,30 @@
     };
 
     const showDetailsPanel = () => {
-      detailsPanel.classList.remove('hidden');
-      detailsPanel.classList.add('visible');
-      // Force reflow to ensure transition works
-      detailsPanel.offsetHeight;
+      const isMobile = window.innerWidth < 1280;
 
-      // Shift calendar to the left
-      appContainer.classList.add('xl:justify-start');
-      appContainer.classList.remove('xl:justify-center');
+      if (isMobile) {
+        detailsPanelMobile.classList.add('visible');
+      } else {
+        detailsPanelPC.classList.remove('hidden');
+        detailsPanelPC.classList.add('visible');
+        detailsPanelPC.offsetHeight; // Force reflow
+        appContainer.classList.add('xl:justify-start');
+        appContainer.classList.remove('xl:justify-center');
+      }
     };
 
     const hideDetailsPanel = () => {
-      detailsPanel.classList.remove('visible');
-      detailsPanel.classList.add('hidden');
-
-      // Center the calendar
-      appContainer.classList.remove('xl:justify-start');
-      appContainer.classList.add('xl:justify-center');
+      const isMobile = window.innerWidth < 1280;
+      
+      if (isMobile) {
+        detailsPanelMobile.classList.remove('visible');
+      } else {
+        detailsPanelPC.classList.remove('visible');
+        detailsPanelPC.classList.add('hidden');
+        appContainer.classList.remove('xl:justify-start');
+        appContainer.classList.add('xl:justify-center');
+      }
     };
 
     const displayEventDetails = (dateKey, year) => {
@@ -586,8 +639,6 @@
         hideDetailsPanel();
         return;
       }
-
-      eventDetails.innerHTML = '';
 
       const [month, day] = dateKey.split('/').map(Number);
       const fullDate = new Date(year, month - 1, day);
@@ -612,7 +663,6 @@
         const imgURL = `https://www.stmarysnova.org/images/${media}`;
         imageHTML = `
           <div class="mb-4">
-            <!-- Removed max-h-48 class to allow the image to display at full height -->
             <img src="${imgURL}" class="w-full object-cover rounded-2xl" style="height: auto;" alt="Event image" onerror="this.src='https://placehold.co/400x200/cccccc/333333?text=Image+Not+Found';">
           </div>
         `;
@@ -641,7 +691,14 @@
         </div>
       `;
 
-      eventDetails.appendChild(eventCard);
+      // Render to the correct panel
+      const isMobile = window.innerWidth < 1280;
+      if (isMobile) {
+        eventDetailsMobile.innerHTML = eventCard.innerHTML;
+      } else {
+        eventDetailsPC.innerHTML = eventCard.innerHTML;
+      }
+
       showDetailsPanel();
     };
 
@@ -667,11 +724,23 @@
       }
     });
 
+    closeMobileDetailsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideDetailsPanel();
+    });
+
     // Global click handler to hide details panel when clicking outside
     document.addEventListener('click', (e) => {
-      // Don't hide if clicking on the details panel itself or dates with events
-      if (!detailsPanel.contains(e.target) && !e.target.closest('.event-cell')) {
-        hideDetailsPanel();
+      const isMobile = window.innerWidth < 1280;
+      
+      if (isMobile) {
+        if (!detailsPanelMobile.contains(e.target) && !e.target.closest('.event-cell')) {
+          hideDetailsPanel();
+        }
+      } else {
+        if (!detailsPanelPC.contains(e.target) && !e.target.closest('.event-cell')) {
+          hideDetailsPanel();
+        }
       }
     });
 
