@@ -33,7 +33,6 @@
       --md-sys-color-surface-container-highest: #e4e5e9;
       --md-sys-color-error: #ba1a1a;
       --md-sys-color-on-error: #ffffff;
-
       /* New vibrant red theme colors for the 'today' highlight */
       --vibrant-red: #ef4444; /* A bright, saturated red */
       --on-vibrant-red: #ffffff; /* White text for contrast */
@@ -146,11 +145,12 @@
     .day-cell {
       position: relative;
       cursor: pointer;
-      min-height: 120px;
+      /* Adjusted min-height for better mobile scaling */
+      min-height: 100px;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      padding: 16px;
+      padding: 12px;
       overflow: hidden;
       background-size: cover;
       background-position: center;
@@ -160,6 +160,14 @@
       transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
     }
 
+    /* Desktop min-height */
+    @media (min-width: 768px) {
+      .day-cell {
+        min-height: 120px;
+        padding: 16px;
+      }
+    }
+    
     .day-cell:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -185,11 +193,17 @@
       z-index: 2;
     }
 
+    /* Responsive day number font size */
     .day-number {
-      font-size: 1.25rem;
+      font-size: 1rem;
       font-weight: 600;
       color: var(--md-sys-color-on-surface);
       margin-bottom: 8px;
+    }
+    @media (min-width: 768px) {
+      .day-number {
+        font-size: 1.25rem;
+      }
     }
 
     /* Fixed 'today' styling for visibility */
@@ -204,12 +218,18 @@
       font-weight: 700;
     }
 
+    /* Responsive event name font size */
     .event-name {
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--md-sys-color-error);
       word-break: break-word;
       line-height: 1.3;
+    }
+    @media (min-width: 768px) {
+      .event-name {
+        font-size: 0.875rem;
+      }
     }
 
     .event-cell {
