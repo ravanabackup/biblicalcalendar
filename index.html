@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>2025 Event Calendar</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /*
+      Material Design 3 color palette.
+      Added custom vibrant red variables for the "today" highlight.
+    */
     :root {
       --md-sys-color-primary: #1976d2;
       --md-sys-color-on-primary: #ffffff;
@@ -29,6 +33,16 @@
       --md-sys-color-surface-container-highest: #e4e5e9;
       --md-sys-color-error: #ba1a1a;
       --md-sys-color-on-error: #ffffff;
+
+      /* New vibrant red theme colors for the 'today' highlight */
+      --vibrant-red: #ef4444; /* A bright, saturated red */
+      --on-vibrant-red: #ffffff; /* White text for contrast */
+
+      /* Colors for Gemini API button and suggestions */
+      --gemini-primary: #6B46C1;
+      --gemini-on-primary: #ffffff;
+      --gemini-container: #E9D8FD;
+      --gemini-on-container: #44337A;
     }
 
     [data-theme="dark"] {
@@ -53,10 +67,29 @@
       --md-sys-color-surface-container-highest: #323538;
       --md-sys-color-error: #ffb4ab;
       --md-sys-color-on-error: #690005;
+
+      /* Dark theme colors for Gemini API button and suggestions */
+      --gemini-primary: #D6BCFA;
+      --gemini-on-primary: #44337A;
+      --gemini-container: #44337A;
+      --gemini-on-container: #E9D8FD;
     }
 
+    /* Updated CSS for the vibrant red "today" theme */
+    .today-red-theme {
+      background-color: var(--vibrant-red);
+      border-color: var(--vibrant-red);
+      color: var(--on-vibrant-red);
+    }
+
+    .today-red-theme .day-number {
+      color: var(--on-vibrant-red);
+      font-weight: 700;
+    }
+
+    /* General styling and animations */
     * {
-      transition: background-color 0.3s cubic-bezier(0.2, 0, 0, 1), 
+      transition: background-color 0.3s cubic-bezier(0.2, 0, 0, 1),
                   color 0.3s cubic-bezier(0.2, 0, 0, 1),
                   border-color 0.3s cubic-bezier(0.2, 0, 0, 1);
     }
@@ -159,15 +192,16 @@
       margin-bottom: 8px;
     }
 
-    .today .day-number {
-      color: var(--md-sys-color-primary);
-      font-weight: 700;
-    }
-
+    /* Fixed 'today' styling for visibility */
     .today {
-      background-color: var(--md-sys-color-primary-container);
-      border-color: var(--md-sys-color-primary);
+      background-color: var(--vibrant-red);
+      border-color: var(--vibrant-red);
       border-width: 2px;
+    }
+    
+    .today .day-number {
+      color: var(--on-vibrant-red);
+      font-weight: 700;
     }
 
     .event-name {
@@ -337,9 +371,10 @@
     </svg>
   </button>
 
-  <div id="app" class="surface rounded-3xl shadow-2xl w-full max-w-7xl mx-auto flex flex-col xl:flex-row p-6 lg:p-8 space-y-8 xl:space-y-0 xl:space-x-8">
+  <!-- Modified App container for center/left slide -->
+  <div id="app" class="surface rounded-3xl shadow-2xl w-full max-w-7xl mx-auto flex flex-col xl:flex-row p-6 lg:p-8 space-y-8 xl:space-y-0 xl:space-x-8 justify-center items-start transition-all duration-500 ease-out-back">
     <!-- Calendar -->
-    <div class="xl:w-2/3">
+    <div id="calendar-container" class="xl:w-2/3">
       <div class="flex items-center justify-between mb-8">
         <button id="prev-month" class="header-button">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -353,7 +388,7 @@
           </svg>
         </button>
       </div>
-      
+
       <div class="grid grid-cols-7 text-center mb-4">
         <div class="weekday-header">Sun</div>
         <div class="weekday-header">Mon</div>
@@ -363,7 +398,7 @@
         <div class="weekday-header">Fri</div>
         <div class="weekday-header">Sat</div>
       </div>
-      
+
       <div id="calendar-grid" class="grid grid-cols-7 gap-3"></div>
     </div>
 
@@ -386,6 +421,7 @@
     let currentYear = 2025;
     let events = {};
 
+    const appContainer = document.getElementById('app');
     const calendarGrid = document.getElementById("calendar-grid");
     const monthYearDisplay = document.getElementById("month-year-display");
     const eventDetails = document.getElementById("event-details");
@@ -397,7 +433,7 @@
 
     // Theme management
     const initTheme = () => {
-      const savedTheme = localStorage.getItem('theme') || 
+      const savedTheme = localStorage.getItem('theme') ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', savedTheme);
       updateThemeIcon(savedTheme);
@@ -452,7 +488,7 @@
       monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
       calendarGrid.innerHTML = '';
       calendarGrid.classList.add('grid-fade-in');
-      
+
       // Hide details panel when month changes
       hideDetailsPanel();
 
@@ -474,12 +510,12 @@
         const dateKey = `${month + 1}/${day}`;
         const dayCell = document.createElement('div');
         dayCell.className = "day-cell";
-        
-        // Highlight today
+
+        // Highlight today with the vibrant red theme
         if (isCurrentMonth && day === currentDay) {
           dayCell.classList.add('today');
         }
-        
+
         const overlay = document.createElement('div');
         overlay.className = 'day-overlay';
         dayCell.appendChild(overlay);
@@ -492,16 +528,16 @@
           const entry = events[dateKey];
           const title = entry[0] || '';
           const media = entry.find(e => typeof e === 'string' && e.match(/\.(jpg|png|gif)$/i));
-          
+
           if (media) {
             dayCell.style.backgroundImage = `url(https://www.stmarysnova.org/images/${media})`;
           }
-          
+
           const eventTitle = title.split("\n")[0];
           if (eventTitle) {
             content.innerHTML += `<div class="event-name">${eventTitle}</div>`;
           }
-          
+
           dayCell.classList.add('event-cell');
           dayCell.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -529,11 +565,19 @@
       detailsPanel.classList.add('visible');
       // Force reflow to ensure transition works
       detailsPanel.offsetHeight;
+
+      // Shift calendar to the left
+      appContainer.classList.add('xl:justify-start');
+      appContainer.classList.remove('xl:justify-center');
     };
 
     const hideDetailsPanel = () => {
       detailsPanel.classList.remove('visible');
       detailsPanel.classList.add('hidden');
+
+      // Center the calendar
+      appContainer.classList.remove('xl:justify-start');
+      appContainer.classList.add('xl:justify-center');
     };
 
     const displayEventDetails = (dateKey, year) => {
@@ -554,12 +598,12 @@
       const eventCard = document.createElement('div');
       eventCard.className = 'event-card';
 
-      const lines = data.filter(item => 
-        item && typeof item === 'string' && 
-        !item.includes("/cgi-bin/") && 
+      const lines = data.filter(item =>
+        item && typeof item === 'string' &&
+        !item.includes("/cgi-bin/") &&
         !item.match(/\.(jpg|png|gif)$/i)
       );
-      const media = data.find(item => 
+      const media = data.find(item =>
         typeof item === 'string' && item.match(/\.(jpg|png|gif)$/i)
       );
 
@@ -568,7 +612,8 @@
         const imgURL = `https://www.stmarysnova.org/images/${media}`;
         imageHTML = `
           <div class="mb-4">
-            <img src="${imgURL}" class="w-full max-h-48 object-cover rounded-2xl" alt="Event image">
+            <!-- Removed max-h-48 class to allow the image to display at full height -->
+            <img src="${imgURL}" class="w-full object-cover rounded-2xl" style="height: auto;" alt="Event image" onerror="this.src='https://placehold.co/400x200/cccccc/333333?text=Image+Not+Found';">
           </div>
         `;
       }
@@ -595,7 +640,7 @@
           `}
         </div>
       `;
-      
+
       eventDetails.appendChild(eventCard);
       showDetailsPanel();
     };
