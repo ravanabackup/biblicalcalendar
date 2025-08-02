@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>2025 Event Calendar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --md-sys-color-primary: #1976d2;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #d3e3fd;
+      --md-sys-color-on-primary-container: #001d35;
+      --md-sys-color-secondary: #565f71;
+      --md-sys-color-on-secondary: #ffffff;
+      --md-sys-color-secondary-container: #dae2f9;
+      --md-sys-color-on-secondary-container: #131c2b;
+      --md-sys-color-surface: #fcfcff;
+      --md-sys-color-on-surface: #1a1c1e;
+      --md-sys-color-surface-variant: #dfe2eb;
+      --md-sys-color-on-surface-variant: #43474e;
+      --md-sys-color-outline: #73777f;
+      --md-sys-color-outline-variant: #c3c6cf;
+      --md-sys-color-background: #fcfcff;
+      --md-sys-color-on-background: #1a1c1e;
+      --md-sys-color-surface-container: #f0f1f4;
+      --md-sys-color-surface-container-high: #eaebee;
+      --md-sys-color-surface-container-highest: #e4e5e9;
+      --md-sys-color-error: #ba1a1a;
+      --md-sys-color-on-error: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --md-sys-color-primary: #a2c9ff;
+      --md-sys-color-on-primary: #003258;
+      --md-sys-color-primary-container: #004a7c;
+      --md-sys-color-on-primary-container: #d3e3fd;
+      --md-sys-color-secondary: #bec6dc;
+      --md-sys-color-on-secondary: #283041;
+      --md-sys-color-secondary-container: #3e4758;
+      --md-sys-color-on-secondary-container: #dae2f9;
+      --md-sys-color-surface: #101214;
+      --md-sys-color-on-surface: #e2e2e6;
+      --md-sys-color-surface-variant: #43474e;
+      --md-sys-color-on-surface-variant: #c3c6cf;
+      --md-sys-color-outline: #8d9199;
+      --md-sys-color-outline-variant: #43474e;
+      --md-sys-color-background: #101214;
+      --md-sys-color-on-background: #e2e2e6;
+      --md-sys-color-surface-container: #1d1f21;
+      --md-sys-color-surface-container-high: #272a2d;
+      --md-sys-color-surface-container-highest: #323538;
+      --md-sys-color-error: #ffb4ab;
+      --md-sys-color-on-error: #690005;
+    }
+
+    * {
+      transition: background-color 0.3s cubic-bezier(0.2, 0, 0, 1), 
+                  color 0.3s cubic-bezier(0.2, 0, 0, 1),
+                  border-color 0.3s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    body {
+      font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--md-sys-color-background);
+      color: var(--md-sys-color-on-background);
+    }
+
+    .surface {
+      background-color: var(--md-sys-color-surface);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .surface-container {
+      background-color: var(--md-sys-color-surface-container);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .surface-container-high {
+      background-color: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .surface-container-highest {
+      background-color: var(--md-sys-color-surface-container-highest);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .primary {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+
+    .primary-container {
+      background-color: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+    }
+
+    .secondary-container {
+      background-color: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
+
+    .outline {
+      border-color: var(--md-sys-color-outline);
+    }
+
+    .outline-variant {
+      border-color: var(--md-sys-color-outline-variant);
+    }
+
+    .day-cell {
+      position: relative;
+      cursor: pointer;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 16px;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      border-radius: 24px;
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .day-cell:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      border-color: var(--md-sys-color-primary);
+      z-index: 10;
+    }
+
+    [data-theme="dark"] .day-cell:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .day-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--md-sys-color-surface);
+      opacity: 0.85;
+      z-index: 1;
+      border-radius: 24px;
+    }
+
+    .day-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .day-number {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 8px;
+    }
+
+    .today .day-number {
+      color: var(--md-sys-color-primary);
+      font-weight: 700;
+    }
+
+    .today {
+      background-color: var(--md-sys-color-primary-container);
+      border-color: var(--md-sys-color-primary);
+      border-width: 2px;
+    }
+
+    .event-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--md-sys-color-error);
+      word-break: break-word;
+      line-height: 1.3;
+    }
+
+    .event-cell {
+      background-color: var(--md-sys-color-primary-container);
+      border-color: var(--md-sys-color-primary);
+    }
+
+    .event-cell .day-number {
+      color: var(--md-sys-color-on-primary-container);
+    }
+
+    .header-button {
+      background-color: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      border-radius: 20px;
+      padding: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .header-button:hover {
+      background-color: var(--md-sys-color-surface-container-highest);
+      transform: scale(1.05);
+    }
+
+    .theme-toggle {
+      background-color: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      border-radius: 24px;
+      padding: 12px 16px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .theme-toggle:hover {
+      background-color: var(--md-sys-color-surface-container-highest);
+      transform: scale(1.02);
+    }
+
+    .calendar-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      letter-spacing: -0.02em;
+    }
+
+    .weekday-header {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface-variant);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 16px 0;
+    }
+
+    .event-card {
+      background-color: var(--md-sys-color-surface-container-high);
+      border-radius: 24px;
+      padding: 20px;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      animation: slideIn 0.3s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+      z-index: 1000;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-theme="dark"] .fab:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .grid-fade-in {
+      animation: gridFadeIn 0.5s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    @keyframes gridFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .details-panel {
+      background-color: var(--md-sys-color-surface-container);
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .details-panel.hidden {
+      opacity: 0;
+      transform: translateX(24px) scale(0.95);
+      pointer-events: none;
+    }
+
+    .details-panel.visible {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: all;
+    }
+
+    .section-title {
+      font-size: 1.375rem;
+      font-weight: 600;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 lg:p-6">
+  <!-- Theme Toggle FAB -->
+  <button id="theme-toggle" class="fab" aria-label="Toggle theme">
+    <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+    </svg>
+  </button>
+
+  <div id="app" class="surface rounded-3xl shadow-2xl w-full max-w-7xl mx-auto flex flex-col xl:flex-row p-6 lg:p-8 space-y-8 xl:space-y-0 xl:space-x-8">
+    <!-- Calendar -->
+    <div class="xl:w-2/3">
+      <div class="flex items-center justify-between mb-8">
+        <button id="prev-month" class="header-button">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="calendar-title" id="month-year-display"></div>
+        <button id="next-month" class="header-button">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-7 text-center mb-4">
+        <div class="weekday-header">Sun</div>
+        <div class="weekday-header">Mon</div>
+        <div class="weekday-header">Tue</div>
+        <div class="weekday-header">Wed</div>
+        <div class="weekday-header">Thu</div>
+        <div class="weekday-header">Fri</div>
+        <div class="weekday-header">Sat</div>
+      </div>
+      
+      <div id="calendar-grid" class="grid grid-cols-7 gap-3"></div>
+    </div>
+
+    <!-- Event Details -->
+    <div id="details-panel" class="xl:w-1/3 details-panel hidden flex-col justify-start">
+      <h3 class="section-title">Event Details</h3>
+      <div id="event-details" class="space-y-4">
+        <div class="flex items-center justify-center h-32">
+          <p class="text-center" style="color: var(--md-sys-color-on-surface-variant);">
+            Click on a date with an event to see details
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = 2025;
+    let events = {};
+
+    const calendarGrid = document.getElementById("calendar-grid");
+    const monthYearDisplay = document.getElementById("month-year-display");
+    const eventDetails = document.getElementById("event-details");
+    const detailsPanel = document.getElementById("details-panel");
+    const prevMonthBtn = document.getElementById("prev-month");
+    const nextMonthBtn = document.getElementById("next-month");
+    const themeToggle = document.getElementById("theme-toggle");
+    const themeIcon = document.getElementById("theme-icon");
+
+    // Theme management
+    const initTheme = () => {
+      const savedTheme = localStorage.getItem('theme') || 
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+    };
+
+    const updateThemeIcon = (theme) => {
+      if (theme === 'dark') {
+        themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>`;
+      } else {
+        themeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>`;
+      }
+    };
+
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+
+    const fetchAndRenderCalendar = async (year) => {
+      const proxyUrl = "https://cors.kawiesh.top/";
+      const targetUrl = `https://www.stmarysnova.org/cgi-bin/unical.cgi?json=Y&yr=${year}`;
+      try {
+        const response = await fetch(proxyUrl + targetUrl);
+        if (!response.ok) throw new Error("Failed to fetch data");
+        const data = await response.json();
+        events = data;
+        renderCalendar(currentMonth, currentYear);
+      } catch (err) {
+        console.error("Error fetching events:", err);
+        eventDetails.innerHTML = `
+          <div class="event-card">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-2 h-2 rounded-full" style="background-color: var(--md-sys-color-error);"></div>
+              <p style="color: var(--md-sys-color-error); font-weight: 500;">Failed to load events</p>
+            </div>
+            <p style="color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem;">
+              Please check your internet connection and try again.
+            </p>
+          </div>
+        `;
+      }
+    };
+
+    const renderCalendar = (month, year) => {
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+      calendarGrid.innerHTML = '';
+      calendarGrid.classList.add('grid-fade-in');
+      
+      // Hide details panel when month changes
+      hideDetailsPanel();
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const today = new Date();
+      const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+      const currentDay = today.getDate();
+
+      // Empty cells for days before month starts
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'day-cell opacity-30';
+        calendarGrid.appendChild(emptyCell);
+      }
+
+      // Days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${month + 1}/${day}`;
+        const dayCell = document.createElement('div');
+        dayCell.className = "day-cell";
+        
+        // Highlight today
+        if (isCurrentMonth && day === currentDay) {
+          dayCell.classList.add('today');
+        }
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'day-overlay';
+        dayCell.appendChild(overlay);
+
+        const content = document.createElement('div');
+        content.className = 'day-content flex flex-col gap-2';
+        content.innerHTML = `<div class="day-number">${day}</div>`;
+
+        if (events[dateKey]) {
+          const entry = events[dateKey];
+          const title = entry[0] || '';
+          const media = entry.find(e => typeof e === 'string' && e.match(/\.(jpg|png|gif)$/i));
+          
+          if (media) {
+            dayCell.style.backgroundImage = `url(https://www.stmarysnova.org/images/${media})`;
+          }
+          
+          const eventTitle = title.split("\n")[0];
+          if (eventTitle) {
+            content.innerHTML += `<div class="event-name">${eventTitle}</div>`;
+          }
+          
+          dayCell.classList.add('event-cell');
+          dayCell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            displayEventDetails(dateKey, year);
+          });
+        } else {
+          dayCell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hideDetailsPanel();
+          });
+        }
+
+        dayCell.appendChild(content);
+        calendarGrid.appendChild(dayCell);
+      }
+
+      // Remove animation class after animation completes
+      setTimeout(() => {
+        calendarGrid.classList.remove('grid-fade-in');
+      }, 500);
+    };
+
+    const showDetailsPanel = () => {
+      detailsPanel.classList.remove('hidden');
+      detailsPanel.classList.add('visible');
+      // Force reflow to ensure transition works
+      detailsPanel.offsetHeight;
+    };
+
+    const hideDetailsPanel = () => {
+      detailsPanel.classList.remove('visible');
+      detailsPanel.classList.add('hidden');
+    };
+
+    const displayEventDetails = (dateKey, year) => {
+      const data = events[dateKey];
+      if (!data) {
+        hideDetailsPanel();
+        return;
+      }
+
+      eventDetails.innerHTML = '';
+
+      const [month, day] = dateKey.split('/').map(Number);
+      const fullDate = new Date(year, month - 1, day);
+      const formatted = fullDate.toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      const eventCard = document.createElement('div');
+      eventCard.className = 'event-card';
+
+      const lines = data.filter(item => 
+        item && typeof item === 'string' && 
+        !item.includes("/cgi-bin/") && 
+        !item.match(/\.(jpg|png|gif)$/i)
+      );
+      const media = data.find(item => 
+        typeof item === 'string' && item.match(/\.(jpg|png|gif)$/i)
+      );
+
+      let imageHTML = '';
+      if (media) {
+        const imgURL = `https://www.stmarysnova.org/images/${media}`;
+        imageHTML = `
+          <div class="mb-4">
+            <img src="${imgURL}" class="w-full max-h-48 object-cover rounded-2xl" alt="Event image">
+          </div>
+        `;
+      }
+
+      const eventTitle = lines[0] ? lines[0].split('\n')[0] : 'Event Details';
+
+      eventCard.innerHTML = `
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-3 h-3 rounded-full" style="background-color: var(--md-sys-color-primary);"></div>
+          <p class="text-sm font-medium" style="color: var(--md-sys-color-on-surface-variant);">${formatted}</p>
+        </div>
+        ${imageHTML}
+        <h4 class="text-xl font-semibold mb-3" style="color: var(--md-sys-color-on-surface);">${eventTitle}</h4>
+        <div class="space-y-2">
+          ${lines.slice(1).map(line => `
+            <div class="flex items-start gap-2">
+              <div class="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style="background-color: var(--md-sys-color-on-surface-variant);"></div>
+              <p class="text-sm leading-relaxed" style="color: var(--md-sys-color-on-surface-variant);">${line}</p>
+            </div>
+          `).join('') || `
+            <p class="text-sm" style="color: var(--md-sys-color-on-surface-variant);">
+              No additional details available.
+            </p>
+          `}
+        </div>
+      `;
+      
+      eventDetails.appendChild(eventCard);
+      showDetailsPanel();
+    };
+
+    prevMonthBtn.addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+        fetchAndRenderCalendar(currentYear);
+      } else {
+        renderCalendar(currentMonth, currentYear);
+      }
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+        fetchAndRenderCalendar(currentYear);
+      } else {
+        renderCalendar(currentMonth, currentYear);
+      }
+    });
+
+    // Global click handler to hide details panel when clicking outside
+    document.addEventListener('click', (e) => {
+      // Don't hide if clicking on the details panel itself or dates with events
+      if (!detailsPanel.contains(e.target) && !e.target.closest('.event-cell')) {
+        hideDetailsPanel();
+      }
+    });
+
+    // Initialize
+    initTheme();
+    window.onload = () => {
+      fetchAndRenderCalendar(currentYear);
+    };
+  </script>
+</body>
+</html>
